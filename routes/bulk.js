@@ -1,4 +1,7 @@
-
+var path = require('path');
+var fs = require('fs');
+var imagemagick = require('imagemagick');
+var gm = require('gm').subClass({ imageMagick: true });
 /*
  * bulk data operations
  */
@@ -16,9 +19,9 @@ exports.clear = function(req, res){
 		mysql = require('mysql');
 		conn = mysql.createConnection({
 			host: 'web2.cpsc.ucalgary.ca',
-			user: 's513_krdillma',
-			password: '10083537',
-			database: 's513_krdillma'
+			user: 's513_bjrougea',
+			password: '10013253',
+			database: 's513_bjrougea'
 		});
 
 		conn.connect();
@@ -158,20 +161,25 @@ exports.photos = function(req, res){
 		{
 			req.models.Photo.create([
 			{
-				id: photos[i].id,
+				id: photos[i].id+1,
 				owner_id: photos[i].user_id,
 				Path: photos[i].path,
 				Timestamp: photos[i].timestamp
 			}
 			], function (err, items) {
-				console.log('0');
-				loadedPhotos++
-				if (err) throw err;
-				if (loadedPhotos == photos.length)
-				{
-					res.writeHead(200, {'Content-Type': 'text/plain'});
-					res.end('Added photos');
-				}
+				var extension = items[0].Path.split(".")[1];
+				var newPath = path.normalize(__dirname + "/../photos/" + items[0].id + "." + extension)
+				var thumbPath = path.normalize(__dirname + "/../photos/thumbnail/" + items[0].id + "." + extension)
+				fs.createReadStream(items[0].Path).pipe(fs.createWriteStream(newPath));
+				gm(items[0].Path).resize(400).write(thumbPath, function(err) {
+					loadedPhotos++
+					if (err) throw err;
+					if (loadedPhotos == photos.length)
+					{
+						res.writeHead(200, {'Content-Type': 'text/plain'});
+						res.end('Added photos');
+					}
+				});
 			});
 		}
 		if (photos.length == 0)
