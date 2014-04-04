@@ -19,7 +19,7 @@ pool = mysql.createPool({
 		user: 's513_bjrougea',
 		password: '10013253',
 		database: 's513_bjrougea',
-		connectionLimit: 5
+		connectionLimit: 1
 		});
 
 var app = express();

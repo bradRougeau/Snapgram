@@ -106,7 +106,58 @@ var sortPhotos = function(a, b) {
 }
 
 exports.index = function(req, res){
-  var start = new Date().getTime();
+  pool.getConnection(function(err, connection)
+  {
+		var query = "Select Photo.id, Photo.Path, Photo.Timestamp, User.FullName from Feed, Photo, User where Feed.user_id = ? and Feed.type = 'Photo' and Feed.object_id = Photo.id and Photo.owner_id = User.id;"
+		connection.query(query, [req.session.user.id], function(err, results) {
+			connection.release();
+			if (err) throw err;
+			if (results == undefined)
+			{
+			  req.session.user = null;
+			  res.redirect('/sessions/new');
+			  var end = new Date().getTime();
+			  var db_time = end - start; 
+			  console.log("Database access (Feed table) " + db_time + "ms");
+			}
+			else
+			{
+				var photos = []
+				results.forEach(function(entry) {
+					photo = {}
+					photo.owner_name = entry.FullName;
+					photo.timeAgo = exports.time_ago_in_words(new Date(parseInt(photo.Timestamp)))
+					photo.shared = false;
+					photo.Path = entry.Path;
+					photo.id = entry.id;
+					photo.extension = entry.Path.split(".")[1];
+					photos.push(photo)
+				}
+				)
+				photos.sort(sortPhotos);
+				uniquePhotos = [];
+				photoIDs = [];
+				//remove duplicates
+				for ( var i = 0; i < photos.length; i++)
+				{
+					if (photoIDs.indexOf(photos[i].id) == -1)
+					{
+						photoIDs.push(photos[i].id);
+						uniquePhotos.push(photos[i]);
+					}
+				}
+				photos = uniquePhotos;
+				if (!req.query.page)
+				{
+					req.query.page = 1;
+				}
+				var nextPage = photos.length > req.query.page*30 ? req.query.page+1 : 0;
+				photos = photos.slice((req.query.page-1)*30,req.query.page*30);
+				res.render('index', { authenticated: true, currentUser: req.session.user, title: 'Feed', feed: photos, req: req, nextPage: nextPage});
+			}
+		});
+  });
+  /**var start = new Date().getTime();
   req.models.Feed.find({user_id: req.session.user.id}, function (err, rows) {
 	  if (rows == undefined)
 	  {
@@ -237,7 +288,7 @@ exports.index = function(req, res){
 		}
 	  });
         }
-        });
+        });*/
 
 };
 
