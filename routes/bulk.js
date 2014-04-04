@@ -158,7 +158,7 @@ exports.photos = function(req, res){
 		{
 			req.models.Photo.create([
 			{
-				id: photos[i].id,
+				id: photos[i].id + 1,
 				owner_id: photos[i].user_id,
 				Path: photos[i].path,
 				Timestamp: photos[i].timestamp
