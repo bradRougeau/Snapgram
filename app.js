@@ -13,15 +13,6 @@ var http = require('http');
 var path = require('path');
 var flash = require('connect-flash');
 
-mysql = require('mysql');
-pool = mysql.createPool({
-    host: 'web2.cpsc.ucalgary.ca',
-    user: 's513_krdillma',
-    password: '10083537',
-    database: 's513_krdillma',
-    connectionLimit: 5
-    });
-
 var app = express();
 app.use(express.bodyParser({keepExtensions: true, uploadDir: './photos'}));
 app.lock = {}
@@ -56,20 +47,40 @@ app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_k
     models.Photo = db.define("Photo", { 
         Path: String,
         Timestamp : Date
-        }, {
-          hooks: {
-          afterCreate: function (next){
-            var photo_id = this.id;
-            var owner_id = this.owner_id;
-            pool.getConnection(function(err, connection)
-              {
-              var query = "Insert into Feed (user_id, object_id, type) Select follower_id, ?, ? from Follow where followee_id = ?;"
-              connection.query(query, [photo_id, "Photo", owner_id], function(err, results) {
-              connection.release();
-              if (err) throw err;
-            });
-            });
-    }
+    }, {
+      hooks: {
+        afterCreate: function (next){
+		  var photo_id = this.id;
+          models.Follow.find({followee_id: this.owner_id}, function(err, rows) {
+			if (err) throw err;
+            rows.forEach(function(row){
+              // add photos to all follower's feeds
+              row.getFollower(function (err, follower){
+				if (err) throw err;
+				//Need to queue up function to load and update feed, as otherwise each feed update will overwrite itself in bulk uploading
+				if (app.lock[follower.id] == undefined || app.lock[follower.id].length == 0)
+				{
+					app.lock[follower.id] = [ function() {
+						follower.getFeed(function (err, feed){
+							if (err) throw err;
+							feed[0].addToFeed(photo_id, "Photo");
+						});
+					} ];
+					app.lock[follower.id][0]();
+				}
+				else
+				{
+					app.lock[follower.id].push(function() {
+						follower.getFeed(function (err, feed){
+							if (err) throw err;
+						});
+					});
+				}
+                
+				})
+            })
+        });
+      }
     }
   });
 
