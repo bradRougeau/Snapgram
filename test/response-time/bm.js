@@ -1,4 +1,10 @@
 /**
+== Version 0.1.1 ==
+- saves the stats json to the file ./result/<port>
+- if debug is enabled, concurrency is 3, otherwise 50
+- makes sure that the response code for the feed request is 200
+- checks the number of thumbnails in the feed
+
 == Version 0.1.0 ==
 - concurrent requests added
 - timing added
@@ -36,7 +42,7 @@ var util = require('util');
 var async = require('async');
 
 const debug = false;
-const CONCURRENCY = 50;
+const CONCURRENCY = debug ? 3 : 50;
 
 if (process.argv.length < 3) {
 	console.log('node ' + __filename + ' <port number> [<password>]');
@@ -97,6 +103,9 @@ function findAllThumbnails(body) {
 }
 
 function loadThumbnails(urls, onEnd) {
+	if (urls.length < 30)
+		throw "Not enough thumbnails " + urls.length;
+	
 	function load(i, urls) {
 		if (i >= urls.length) {
 			onEnd();
@@ -128,6 +137,10 @@ function loadThumbnails(urls, onEnd) {
 				console.log('error while loading ' + urls[i], e);
 				throw e;
 			});
+			
+			if (debug) {
+				console.log('Tumbnail ' + i, res.statusCode);
+			}
 			
 			if (res.statusCode != 200)
 				throw "Status code of " + urls[i] + " is " + res.statusCode;
@@ -201,6 +214,15 @@ function printStats() {
 		console.log('----------');
 		console.log(stats);
 	}
+	
+	var outputFilename = 'result/' + port;
+	fs.writeFile(outputFilename, JSON.stringify(stats, null, 4), function(err) {
+		if(err) {
+			console.log(err);
+		} else {
+			console.log("JSON saved to " + outputFilename);
+		}
+	});
 	
 	var pad = '                                              ';
 	var n = 25;
@@ -325,7 +347,7 @@ commands.push({
 		};
 		
 		rest.get(getUrl('feed', false), options).on('complete', function(data, response) {
-			var err = (response.statusCode >= 200 && response.statusCode < 310) ? false : 'status_code = ' + response.statusCode;
+			var err = (response.statusCode == 200) ? false : 'status_code = ' + response.statusCode;
 			var thumbnails = findAllThumbnails(data);
 			if (debug) {
 				console.log('Thumbnails (' + thumbnails.length + '): \n', thumbnails);
