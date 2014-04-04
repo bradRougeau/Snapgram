@@ -134,6 +134,8 @@ exports.index = function(req, res){
 					photos.push(photo)
 				}
 				)
+				/**
+				SORT ON FRONT-END NOW
 				photos.sort(sortPhotos);
 				uniquePhotos = [];
 				photoIDs = [];
@@ -146,7 +148,7 @@ exports.index = function(req, res){
 						uniquePhotos.push(photos[i]);
 					}
 				}
-				photos = uniquePhotos;
+				photos = uniquePhotos;*/
 				if (!req.query.page)
 				{
 					req.query.page = 1;
