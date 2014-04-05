@@ -35,7 +35,7 @@ pool = mysql.createPool({
     user: 's513_krdillma',
     password: '10083537',
     database: 's513_krdillma',
-    connectionLimit: 1
+    connectionLimit: 5
     });
 
 var cache_manager = require('cache-manager');
@@ -48,10 +48,8 @@ app.lock = []
 app.locals.photo_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
 app.locals.memory_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
 
-
 app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_krdillma", {
   define: function (db, models, next) {
-  db.settings.set('instance.cache', false);
     models.User = db.define("User", { 
         FullName : String,
         Username : String,
@@ -66,18 +64,18 @@ app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_k
             }], function (err, items) {
               if (err) throw err;
             })
-       models.Feed.create([
-      {
-        user_id: this.id,
-        FeedList: '[]'
-      }], function (err, newFeed) {
-        if (err) throw err;
-      })
+		   models.Feed.create([
+			{
+				user_id: this.id,
+				FeedList: '[]'
+			}], function (err, newFeed) {
+				if (err) throw err;
+			})
         }
       }
     })
 
-    // With help from Brad. This one was tricky.. (though not an optimization)
+    // Brad had to help with this bit in D3... it was a tricky issue. (Though it has nothing to do with optimization, and should be ok.) :)
     models.Photo = db.define("Photo", { 
         Path: String,
         Timestamp : Date
@@ -121,6 +119,7 @@ app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_k
     });
     }
     }
+  
   });
 
     models.Follow = db.define("Follow", {
@@ -131,44 +130,44 @@ app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_k
     }, {
         methods: {
             addToFeed: function (itemID, type) {
-        currentList = JSON.parse(this.FeedList)
-        currentList.push({'ID': itemID, 'type': type});
-        this.FeedList = JSON.stringify(currentList);
-        this.save();
+				currentList = JSON.parse(this.FeedList)
+				currentList.push({'ID': itemID, 'type': type});
+				this.FeedList = JSON.stringify(currentList);
+				this.save();
             },
             getFeed: function () {
                 return JSON.parse(this.FeedList);
             }
     }, hooks: {
-    afterSave: function () {
-      if (app.lock[this.user_id] != undefined)
-      {
-        app.lock[this.user_id].shift();
-        if ( app.lock[this.user_id].length )
-        {
-          app.lock[this.user_id][0]();
-        }
-      }
-    }
-  }
+		afterSave: function () {
+			if (app.lock[this.user_id] != undefined)
+			{
+				app.lock[this.user_id].shift();
+				if ( app.lock[this.user_id].length )
+				{
+					app.lock[this.user_id][0]();
+				}
+			}
+		}
+	}
     });
-  models.Share = db.define("Share", {
+	models.Share = db.define("Share", {
         Timestamp: Date
     }, {
       hooks: {
         afterCreate: function (next){
-      var share_id = this.id;
+		  var share_id = this.id;
           models.Follow.find({followee_id: this.sharer_id}, function(err, rows) {
-      if (err) throw err;
+			if (err) throw err;
             rows.forEach(function(row){
               // add photos to all follower's feeds
               row.getFollower(function (err, follower){
-        if (err) throw err;
+				if (err) throw err;
                 follower.getFeed(function (err, feed){
-          if (err) throw err;
-            feed[0].addToFeed(share_id, "Share");
+					if (err) throw err;
+				  	feed[0].addToFeed(share_id, "Share");
                 })
-        })
+				})
             })
         });
       }
@@ -180,8 +179,8 @@ app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_k
     models.Feed.hasOne("user", models.User, {
       reverse: "feed"
     });
-  models.Share.hasOne("sharer", models.User);
-  models.Share.hasOne("photo", models.Photo);
+	models.Share.hasOne("sharer", models.User);
+	models.Share.hasOne("photo", models.Photo);
     next();
   }
 }));
