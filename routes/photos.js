@@ -22,15 +22,15 @@ exports.load = function(req, res){
 	req.app.locals.photo_cache.wrap(photoCacheKey, function(){
  		req.models.Photo.get(req.params.id, function(err, photo) {
 
-			// CHANGE: Got rid of graphics magick for serving images here.
-			/*
+			//// CHANGE: Got rid of graphics magick for serving images here.
+			///*
 			var image = gm(photo.Path);
 			image.stream(function (err, stdout, stderr)
 			{
 				if (err) throw err;
 				stdout.pipe(res); 
 			});
-	  		*/
+	  		//*/
 			var end = new Date().getTime();
 			var db_time = end - start; 
 			console.log("Database access (Photo table) " + db_time + "ms");
@@ -79,7 +79,7 @@ exports.loadThumbnail = function(req, res){
 		var newPathSplit = photo.Path.split(".");
 		var newPath = newPathSplit[0] + "thumb." + newPathSplit[1];
 
-		/* CHANGE: get saved thumb instead of doing graphics work
+		//* CHANGE: get saved thumb instead of doing graphics work
 		var image = gm(photo.Path);
 		image.resize(400);
 
@@ -88,7 +88,7 @@ exports.loadThumbnail = function(req, res){
 			if (err) throw err;
 			stdout.pipe(res); 
 		});
-		*/
+		//*/
 
 		var end = new Date().getTime();
 		var db_time = end - start; 
@@ -136,7 +136,7 @@ exports.uploadAction = function(req, res, errorMessage){
 			if (err) throw err;
 			else
 			{
-				saveThumbnail(err, items, req, res, extension);
+				//saveThumbnail(err, items, req, res, extension);
 
 				var newPath = path.normalize(__dirname + "/../photos/" + items[0].id + "." + extension)
 				items[0].Path = newPath;
