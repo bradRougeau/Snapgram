@@ -140,8 +140,6 @@ exports.uploadAction = function(req, res, errorMessage){
 			if (err) throw err;
 			else
 			{
-				saveThumbnail(err, items, req, res, extension);
-				
 				var newPath = path.normalize(__dirname + "/../photos/" + items[0].id + "." + extension)
 				app.res[items[0].id] = res
 				items[0].Path = newPath;
@@ -151,7 +149,7 @@ exports.uploadAction = function(req, res, errorMessage){
 					fs.rename(req.files.image.path, newPath, function(err) 
 					{
 						if (err) throw err;
-						
+						saveThumbnail(err, items, req, res, extension, newPath);
 					});
 				});
 			}
@@ -164,10 +162,10 @@ exports.uploadAction = function(req, res, errorMessage){
 }
 
 // CHANGE: Create the thumbnail and store it on the upload, to make serving images in feed faster
-var saveThumbnail = function(err, items, req, res, extension) {
+var saveThumbnail = function(err, items, req, res, extension, newPath) {
 	var thumbPath = path.normalize(__dirname + "/../photos/" + items[0].id + "thumb." + extension)
 
-	gm(req.files.image.path).resize(400).write(thumbPath, function (error) { 
+	gm(newPath).resize(400).write(thumbPath, function (error) { 
 		if(error) console.log(error);
 	});
 }
