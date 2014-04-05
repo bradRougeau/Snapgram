@@ -168,6 +168,7 @@ var continueFeed = function(feed, req, res) {
 	  			var photosFinal;
 	  			var nextPage;
 
+	  			// CHANGE: caching the photos
 	  			req.app.locals.photo_cache.wrap(photoCacheKey, function(){
 			 			var start2 = new Date().getTime();
 						if (entry.type == 'Photo') {
