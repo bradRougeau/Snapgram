@@ -95,6 +95,7 @@ function findAllThumbnails(body) {
 	var re = /src\s?=\s?('|")(\/photos\/thumbnail\/[^'">]+)/gi;
 	var match;
 	var links = [];
+	console.log(body);
 	while(match = re.exec(body)) {
 		links.push(match[2]);
 	}
