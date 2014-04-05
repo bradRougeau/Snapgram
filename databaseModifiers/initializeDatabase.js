@@ -11,7 +11,7 @@ conn = mysql.createConnection({
 
 conn.connect();
 
-conn.query('GRANT CREATE ON *.* TO `root`@`web2.cpsc.ucalgary.ca`', function(err, results) {
+conn.query('GRANT CREATE ON *.* TO `root`@`localhost`', function(err, results) {
            if (err) throw err;
            
            console.log('Gave root permission to create databases');
@@ -23,13 +23,13 @@ conn.query('CREATE DATABASE `s513_krdillma`', function(err, results) {
            console.log('Created database');
            });
 
-conn.query("GRANT USAGE ON *.* TO `s513_krdillma`@`web2.cpsc.ucalgary.ca` IDENTIFIED BY '10083537'", function(err, results) {
+conn.query("GRANT USAGE ON *.* TO `s513_krdillma`@`localhost` IDENTIFIED BY '10083537'", function(err, results) {
            if (err) throw err;
            
            console.log('Created user');
            });
 
-conn.query('GRANT ALL PRIVILEGES ON `s513_krdillma`.* to `s513_krdillma`@`web2.cpsc.ucalgary.ca`', function(err, results) {
+conn.query('GRANT ALL PRIVILEGES ON `s513_krdillma`.* to `s513_krdillma`@`localhost`', function(err, results) {
            if (err) throw err;
            
            console.log('Gave user privileges to database');

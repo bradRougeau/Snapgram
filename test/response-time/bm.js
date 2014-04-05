@@ -41,7 +41,7 @@ var rest = require('restler');
 var util = require('util');
 var async = require('async');
 
-const debug = false;
+const debug = true;
 const CONCURRENCY = debug ? 3 : 50;
 
 if (process.argv.length < 3) {
@@ -103,8 +103,8 @@ function findAllThumbnails(body) {
 }
 
 function loadThumbnails(urls, onEnd) {
-	if (urls.length < 30)
-		throw "Not enough thumbnails " + urls.length;
+	//if (urls.length < 30)
+	//	throw "Not enough thumbnails " + urls.length;
 	
 	function load(i, urls) {
 		if (i >= urls.length) {

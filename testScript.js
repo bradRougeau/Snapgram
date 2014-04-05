@@ -5,7 +5,7 @@ var jsonUsers = JSON.stringify([{id: 1, name: 'steve', follows: [], password: '1
 
  var options = {
    host: 'localhost',
-   port: 8050,
+   port: 8053,
    path: '/bulk/users?password=zorodi',
    method: 'POST',
    headers: {
@@ -30,7 +30,7 @@ var jsonUsers = JSON.stringify([{id: 1, name: 'steve', follows: [], password: '1
 
  var options2 = {
    host: 'localhost',
-   port: 8050,
+   port: 8053,
    path: '/bulk/photos?password=zorodi',
    method: 'POST',
    headers: {

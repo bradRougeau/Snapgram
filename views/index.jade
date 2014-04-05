@@ -32,7 +32,7 @@ block content
 		each photo in feed
 			.thumbContainer
 				a(href='/photos/#{photo.id}.#{photo.extension}') 
-					img(src='/photos/thumbnail/#{photo.id}.#{photo.extension}' width = 400)
+					img(src='/photos/thumbnail/#{photo.id}.#{photo.extension}')
 				br
 				.labelContainer
 					- if (photo.owner_id != currentUser.id)

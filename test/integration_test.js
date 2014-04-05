@@ -16,7 +16,7 @@ var clearDatabase = function()
 
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: "/bulk/clear?password=zorodi",
 		method: 'GET'
 	}
@@ -60,7 +60,7 @@ var createFirstUser = function()
 
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: "/users/new",
 		method: 'GET',
 		headers: {}
@@ -192,7 +192,7 @@ var createSecondUser = function()
 
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: "/users/create",
 		method: 'POST'
 	}
@@ -288,7 +288,7 @@ var followFirstUser = function()
 {
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		method: 'GET'
 	}
 
@@ -332,7 +332,7 @@ var loginAsFirstUser = function()
 {
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		method: 'POST'
 	}
 
@@ -385,7 +385,7 @@ var uploadPhoto = function()
 {
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: '/photos/create',
 		method: 'POST'
 	}
@@ -430,7 +430,7 @@ var checkFirstUserFeed = function()
 {
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: '/feed',
 		method: 'GET'
 	}
@@ -480,7 +480,7 @@ var checkSecondUserFeed = function()
 {
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: '/feed',
 		method: 'GET'
 	}
