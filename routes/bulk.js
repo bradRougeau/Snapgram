@@ -15,7 +15,7 @@ exports.clear = function(req, res){
 
 		mysql = require('mysql');
 		conn = mysql.createConnection({
-			host: 'localhost',
+			host: 'web2.cpsc.ucalgary.ca',
 			user: 's513_krdillma',
 			password: '10083537',
 			database: 's513_krdillma'
