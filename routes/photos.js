@@ -9,7 +9,6 @@ var gm = require('gm').subClass({ imageMagick: true });
 var flash = require('connect-flash');
 
 var cache_manager = require('cache-manager');
-var photo_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
 
 exports.load = function(req, res){
 	res.writeHead(200, {
@@ -20,7 +19,7 @@ exports.load = function(req, res){
 	var photoCacheKey = 'loadPhoto' + userID;
  	var feed;
 
-	memory_cache.wrap(photoCacheKey, function(){
+	req.app.locals.photo_cache.wrap(photoCacheKey, function(){
  		req.models.Photo.get(req.params.id, function(err, photo) {
 
 			// CHANGE: Got rid of graphics magick for serving images here.

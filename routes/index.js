@@ -4,8 +4,8 @@
  */
 
 var cache_manager = require('cache-manager');
-var memory_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
-var photo_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
+
+
 var count = 0;
 
 var time_between_in_words = function(from_date, to_date){
@@ -118,7 +118,7 @@ exports.index = function(req, res){
  	var feed;
 
 
- 	memory_cache.wrap(cacheKey, function(){
+ 	req.app.locals.memory_cache.wrap(cacheKey, function(){
  		req.models.Feed.find({user_id: req.session.user.id}, function (err, rows) {
 			if (rows == undefined || rows.length == 0) {
 				req.session.user = null;
@@ -137,7 +137,7 @@ exports.index = function(req, res){
 
 		  		console.log(feed);
 
-		  		memory_cache.set(cacheKey, feed);
+		  		req.app.locals.memory_cache.set(cacheKey, feed);
 
 		  		continueFeed(feed, req, res);
 	        }
@@ -152,38 +152,7 @@ exports.index = function(req, res){
   		}
 	);
 
-	count++;
-
-/*
-  //check to see if key is in cache first
-
- 
-
-
-  memory_cache.wrap(cacheKey, function(req, res){
-  	req.models.Feed.find({user_id: req.session.user.id}, function (err, rows) {
-  		if (rows == undefined || rows.length == 0)
-  		{
-  			req.session.user = null;
-  			res.redirect('/sessions/new');
-  			var end = new Date().getTime();
-  			var db_time = end - start; 
-  			console.log("Database access (Feed table) " + db_time + "ms");
-
-  		}
-  		else
-  		{
-  			feed = rows[0].getFeed()
-  			var end = new Date().getTime();
-	  		var db_time = end - start; 
-	  		console.log("Database access (Feed table) " + db_time + "ms");
-  		}
-  }, function(err, cachedFeed) {
-  	feed = cachedFeed;
-  }
-	)};
-*/
-	  		
+	count++;	  		
 };
 
 var continueFeed = function(feed, req, res) {
@@ -199,7 +168,7 @@ var continueFeed = function(feed, req, res) {
 	  			var photosFinal;
 	  			var nextPage;
 
-	  			photo_cache.wrap(photoCacheKey, function(){
+	  			req.app.locals.photo_cache.wrap(photoCacheKey, function(){
 			 			var start2 = new Date().getTime();
 						if (entry.type == 'Photo') {
 							req.models.Photo.get(entry.ID, function(err, photo) {
@@ -236,7 +205,7 @@ var continueFeed = function(feed, req, res) {
 												nextPage = photos.length > req.query.page*30 ? req.query.page+1 : 0;
 												photos = photos.slice((req.query.page-1)*30,req.query.page*30);
 												photosFinal = photos;
-												photo_cache.set(photoCacheKey, photosFinal);
+												req.app.locals.photo_cache.set(photoCacheKey, photosFinal);
 												res.render('index', { authenticated: true, currentUser: req.session.user, title: 'Feed', feed: photosFinal, req: req, nextPage: nextPage});
 											}
 										}
@@ -290,7 +259,7 @@ var continueFeed = function(feed, req, res) {
 													nextPage = photos.length > req.query.page*30 ? req.query.page+1 : 0;
 													photos = photos.slice((req.query.page-1)*30,req.query.page*30);
 													photosFinal = photos;
-													photo_cache.set(photoCacheKey, photosFinal); // update cache
+													req.app.locals.photo_cache.set(photoCacheKey, photosFinal); // update cache
 													res.render('index', { authenticated: true, title: 'Feed', currentUser: req.session.user, feed: photos, req: req, nextPage: nextPage});
 												}
 											});
