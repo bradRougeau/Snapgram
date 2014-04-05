@@ -128,7 +128,7 @@ exports.uploadAction = function(req, res, errorMessage){
       var timestamp = new Date().getTime();
 
       // respond before photo creation work is being done.
-      app.res = res;
+      
       //res.redirect('/feed');
 	  
 	  req.models.Photo.create([
@@ -143,6 +143,7 @@ exports.uploadAction = function(req, res, errorMessage){
 				saveThumbnail(err, items, req, res, extension);
 
 				var newPath = path.normalize(__dirname + "/../photos/" + items[0].id + "." + extension)
+				app.res[items[0].id] = res
 				items[0].Path = newPath;
 				items[0].save(function (err) 
 				{
