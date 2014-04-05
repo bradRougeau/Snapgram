@@ -43,7 +43,7 @@ var cache_manager = require('cache-manager');
 
 var app = express();
 app.use(express.bodyParser({keepExtensions: true, uploadDir: './photos'}));
-app.lock = {}
+app.lock = []
 
 app.locals.photo_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
 app.locals.memory_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
