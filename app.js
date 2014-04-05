@@ -106,7 +106,7 @@ app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_k
               feedsUpdated++
               if (feedsUpdated == resultLength)
               {
-                if (app.res) app.res.redirect;
+                if (photo_id in app.res) app.res[photo_id].redirect('/feed');
                 app.lock.shift();
                 if ( app.lock.length )
                 {
