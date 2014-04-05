@@ -102,10 +102,10 @@ app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_k
             var update = "Update Feed SET FeedList = ? WHERE user_id = ?;"
             connection.query(update, [currentList,result.user_id], function(err, result) {
               connection.release();
-              if (app.res) app.res.redirect;
               feedsUpdated++
               if (feedsUpdated == resultLength)
               {
+                if (app.res) app.res.redirect;
                 app.lock.shift();
                 if ( app.lock.length )
                 {
