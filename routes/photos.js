@@ -8,11 +8,47 @@ var imagemagick = require('imagemagick');
 var gm = require('gm').subClass({ imageMagick: true });
 var flash = require('connect-flash');
 
+var cache_manager = require('cache-manager');
+var photo_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
+
 exports.load = function(req, res){
 	res.writeHead(200, {
             'Content-Type':('image/' + req.params.ext)
 	})
 	var start = new Date().getTime();
+
+	var photoCacheKey = 'loadPhoto' + userID;
+ 	var feed;
+
+	memory_cache.wrap(photoCacheKey, function(){
+ 		req.models.Photo.get(req.params.id, function(err, photo) {
+
+			// CHANGE: Got rid of graphics magick for serving images here.
+			/*
+			var image = gm(photo.Path);
+			image.stream(function (err, stdout, stderr)
+			{
+				if (err) throw err;
+				stdout.pipe(res); 
+			});
+	  		*/
+			var end = new Date().getTime();
+			var db_time = end - start; 
+			console.log("Database access (Photo table) " + db_time + "ms");
+
+			memory_cache.set(photoCacheKey, photo);
+
+			res.write(fs.readFileSync(photo.Path));
+			res.end();
+		});
+ 		
+
+ 		} , function(err, cachedPhoto) {
+ 			res.write(fs.readFileSync(cachedPhoto.Path));
+			res.end();
+  		}
+	);
+/*
 	req.models.Photo.get(req.params.id, function(err, photo) {
 
 		// CHANGE: Got rid of graphics magick for serving images here.
@@ -23,7 +59,7 @@ exports.load = function(req, res){
 			if (err) throw err;
 			stdout.pipe(res); 
 		});
-  		*/
+  		
 		var end = new Date().getTime();
 		var db_time = end - start; 
 		console.log("Database access (Photo table) " + db_time + "ms");
@@ -31,6 +67,7 @@ exports.load = function(req, res){
 		res.write(fs.readFileSync(photo.Path));
 		res.end();
 	});
+  */
 }
 
 exports.loadThumbnail = function(req, res){
