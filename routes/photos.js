@@ -128,7 +128,8 @@ exports.uploadAction = function(req, res, errorMessage){
       var timestamp = new Date().getTime();
 
       // respond before photo creation work is being done.
-      res.redirect('/feed');
+      app.res = res;
+      //res.redirect('/feed');
 	  
 	  req.models.Photo.create([
       {

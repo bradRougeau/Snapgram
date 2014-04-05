@@ -45,6 +45,7 @@ var cache_manager = require('cache-manager');
 
 
 app = express();
+app.res = {}
 app.use(express.bodyParser({keepExtensions: true, uploadDir: './photos'}));
 app.lock = []
 
