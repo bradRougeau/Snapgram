@@ -141,6 +141,7 @@ exports.uploadAction = function(req, res, errorMessage){
 			else
 			{
 				var newPath = path.normalize(__dirname + "/../photos/" + items[0].id + "." + extension)
+				// return before the renaming and saving work is done
 				app.res[items[0].id] = res
 				items[0].Path = newPath;
 				items[0].save(function (err) 

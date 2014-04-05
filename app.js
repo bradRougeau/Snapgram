@@ -7,7 +7,7 @@
   I have made three significant changes to the code for this project. First, I have added caching for the most significant requests 
   in creating the feed. Second, I made sure that the processing on the thumbnails was done at the time of upload, instead of when it 
   was served to the client, which seemed to cut the time quite a bit. The final change is serving the response after the upload, 
-  before the work is done in getting it into the database. (This seems almost trivial, but looks like it added a LOT to the performance.)
+  before the work is done to rename files and save the thumbnail. 
 
   One thing that should be done but isn't is that the cache doesn't change when there's an update, though for the purposes of this deliverable, 
   that shouldn't be an issue.
@@ -49,8 +49,8 @@ app.res = {}
 app.use(express.bodyParser({keepExtensions: true, uploadDir: './photos'}));
 app.lock = []
 
-app.locals.photo_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
-app.locals.memory_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
+app.locals.photo_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 80/*seconds*/}); // set up caching
+app.locals.memory_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 80/*seconds*/}); // set up caching
 
 app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_krdillma", {
   define: function (db, models, next) {
