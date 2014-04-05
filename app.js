@@ -32,10 +32,10 @@ var flash = require('connect-flash');
 mysql = require('mysql');
 pool = mysql.createPool({
     host: 'web2.cpsc.ucalgary.ca',
-    user: 's513_bjrougea',
-    password: '10013253',
-    database: 's513_bjrougea',
-    connectionLimit: 5
+    user: 's513_krdillma',
+    password: '10083537',
+    database: 's513_krdillma',
+    connectionLimit: 1
     });
 
 var cache_manager = require('cache-manager');
