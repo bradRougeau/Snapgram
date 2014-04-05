@@ -41,7 +41,7 @@ var rest = require('restler');
 var util = require('util');
 var async = require('async');
 
-const debug = false;
+const debug = true;
 const CONCURRENCY = debug ? 3 : 50;
 
 if (process.argv.length < 3) {
@@ -95,7 +95,6 @@ function findAllThumbnails(body) {
 	var re = /src\s?=\s?('|")(\/photos\/thumbnail\/[^'">]+)/gi;
 	var match;
 	var links = [];
-	console.log(body);
 	while(match = re.exec(body)) {
 		links.push(match[2]);
 	}
