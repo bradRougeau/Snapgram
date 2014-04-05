@@ -103,8 +103,8 @@ function findAllThumbnails(body) {
 }
 
 function loadThumbnails(urls, onEnd) {
-	if (urls.length < 30)
-		throw "Not enough thumbnails " + urls.length;
+	//if (urls.length < 30)
+	//	throw "Not enough thumbnails " + urls.length;
 	
 	function load(i, urls) {
 		if (i >= urls.length) {
