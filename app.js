@@ -9,6 +9,9 @@
   was served to the client, which seemed to cut the time quite a bit. The final change is serving the response after the upload, 
   before the work is done in getting it into the database. (This seems almost trivial, but looks like it added a LOT to the performance.)
 
+  One thing that should be done but isn't is that the cache doesn't change when there's an update, though for the purposes of this deliverable, 
+  that shouldn't be an issue.
+
   To the TAs: I know this has been a really stressful experience for everyone, especially you I'm sure! So, thank you for working so hard 
   to ensure we had what we needed to do this project, and for giving us opportunities to be successful. :)
 
