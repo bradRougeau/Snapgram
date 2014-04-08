@@ -128,8 +128,7 @@ exports.uploadAction = function(req, res, errorMessage){
       var timestamp = new Date().getTime();
 
       // respond before photo creation work is being done.
-      
-      //res.redirect('/feed');
+      res.redirect('/feed');
 	  
 	  req.models.Photo.create([
       {
@@ -140,9 +139,9 @@ exports.uploadAction = function(req, res, errorMessage){
 			if (err) throw err;
 			else
 			{
+				saveThumbnail(err, items, req, res, extension);
+
 				var newPath = path.normalize(__dirname + "/../photos/" + items[0].id + "." + extension)
-				// return before the renaming and saving work is done
-				app.res[items[0].id] = res
 				items[0].Path = newPath;
 				items[0].save(function (err) 
 				{
@@ -150,7 +149,6 @@ exports.uploadAction = function(req, res, errorMessage){
 					fs.rename(req.files.image.path, newPath, function(err) 
 					{
 						if (err) throw err;
-						saveThumbnail(err, items, req, res, extension, newPath);
 					});
 				});
 			}
@@ -163,10 +161,10 @@ exports.uploadAction = function(req, res, errorMessage){
 }
 
 // CHANGE: Create the thumbnail and store it on the upload, to make serving images in feed faster
-var saveThumbnail = function(err, items, req, res, extension, newPath) {
+var saveThumbnail = function(err, items, req, res, extension) {
 	var thumbPath = path.normalize(__dirname + "/../photos/" + items[0].id + "thumb." + extension)
 
-	gm(newPath).resize(400).write(thumbPath, function (error) { 
-		if(error) console.log(error);
+	gm(req.files.image.path).resize(400).write(thumbPath, function (error) { 
+		if(error) console.log('error');
 	});
 }
