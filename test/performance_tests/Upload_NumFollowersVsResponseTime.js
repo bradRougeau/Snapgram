@@ -127,6 +127,7 @@ var createUsers = function()
 			})
 			response.on('end', function(chunk) {
 				makeRequest(0, data);
+				console.log('here');
 			});
 		 });
 

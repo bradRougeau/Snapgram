@@ -11,7 +11,7 @@ var createRequest = function(requestNum, totalRequests)
 {
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: "/feed",
 		method: 'GET',
 		headers: {'Cookie': 'sid=' + sessionID}
@@ -62,7 +62,7 @@ var login = function()
 {
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: "/sessions/create",
 		method: 'POST'
 	}
@@ -111,7 +111,7 @@ var createUsers = function()
 	
 	var options = {
 	   host: 'localhost',
-	   port: 8050,
+	   port: 8053,
 	   path: '/bulk/users?password=zorodi',
 	   method: 'POST',
 	   headers: {
@@ -125,6 +125,7 @@ var createUsers = function()
 		})
 		response.on('end', function(chunk) {
 			login();
+			console.log('here');
 		});
 	 });
 	 request.write(jsonUsers);
@@ -137,7 +138,7 @@ var clearDatabase = function()
 {
 	var options = {
 		host: "localhost",
-		port: 8050,
+		port: 8053,
 		path: "/bulk/clear?password=zorodi",
 		method: 'GET'
 	}

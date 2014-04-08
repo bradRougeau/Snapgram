@@ -1,22 +1,3 @@
-/*
-  Project: Deliverable 3 - Optimization
-  Kody Dillman
-  10083537
-  Port: 8053
-
-  I have made three significant changes to the code for this project. First, I have added caching for the most significant requests 
-  in creating the feed. Second, I made sure that the processing on the thumbnails was done at the time of upload, instead of when it 
-  was served to the client, which seemed to cut the time quite a bit. The final change is serving the response after the upload, 
-  before the work is done in getting it into the database. (This seems almost trivial, but looks like it added a LOT to the performance.)
-
-  One thing that should be done but isn't is that the cache doesn't change when there's an update, though for the purposes of this deliverable, 
-  that shouldn't be an issue.
-
-  To the TAs: I know this has been a really stressful experience for everyone, especially you I'm sure! So, thank you for working so hard 
-  to ensure we had what we needed to do this project, and for giving us opportunities to be successful. :)
-
-*/
-
 
 /**
  * Module dependencies.
@@ -32,26 +13,11 @@ var http = require('http');
 var path = require('path');
 var flash = require('connect-flash');
 
-mysql = require('mysql');
-pool = mysql.createPool({
-    host: 'web2.cpsc.ucalgary.ca',
-    user: 's513_krdillma',
-    password: '10083537',
-    database: 's513_krdillma',
-    connectionLimit: 5
-    });
-
-var cache_manager = require('cache-manager');
-
-
 var app = express();
 app.use(express.bodyParser({keepExtensions: true, uploadDir: './photos'}));
-app.lock = []
+app.lock = {}
 
-app.locals.photo_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
-app.locals.memory_cache = cache_manager.caching({store: 'memory', max: 10000, ttl: 50/*seconds*/}); // set up caching
-
-app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_krdillma", {
+app.use(orm.express("mysql://s513_krdillma:10083537@localhost/s513_krdillma", {
   define: function (db, models, next) {
     models.User = db.define("User", { 
         FullName : String,
@@ -78,51 +44,44 @@ app.use(orm.express("mysql://s513_krdillma:10083537@web2.cpsc.ucalgary.ca/s513_k
       }
     })
 
-    // Brad had to help with this bit in D3... it was a tricky issue. (Though it has nothing to do with optimization, and should be ok.) :)
     models.Photo = db.define("Photo", { 
         Path: String,
         Timestamp : Date
     }, {
       hooks: {
         afterCreate: function (next){
-      var photo_id = this.id;
-      var owner_id = this.owner_id;
-      pool.getConnection(function(err, connection)
-      {
-      app.lock.push(function() {
-        var query = "Select Feed.user_id, Feed.FeedList from Feed, Follow where Follow.followee_id = ? and Feed.user_id = Follow.follower_id;"
-        connection.query(query, [owner_id], function(err, results) {
-          saveData = {}
-          var feedsUpdated = 0;
-          var resultLength = results.length;
-          results.forEach( function(result) {
-            currentList = JSON.parse(result.FeedList)
-            currentList.push({'ID': photo_id, 'type': 'Photo'});
-            currentList = JSON.stringify(currentList);
-            var update = "Update Feed SET FeedList = ? WHERE user_id = ?;"
-            connection.query(update, [currentList,result.user_id], function(err, result) {
-              connection.release();
-              feedsUpdated++
-              if (feedsUpdated == resultLength)
-              {
-                app.lock.shift();
-                if ( app.lock.length )
-                {
-                  app.lock[0]();
-                }
-              }
-            });
-          });
+		  var photo_id = this.id;
+          models.Follow.find({followee_id: this.owner_id}, function(err, rows) {
+			if (err) throw err;
+            rows.forEach(function(row){
+              // add photos to all follower's feeds
+              row.getFollower(function (err, follower){
+				if (err) throw err;
+				//Need to queue up function to load and update feed, as otherwise each feed update will overwrite itself in bulk uploading
+				if (app.lock[follower.id] == undefined || app.lock[follower.id].length == 0)
+				{
+					app.lock[follower.id] = [ function() {
+						follower.getFeed(function (err, feed){
+							if (err) throw err;
+							feed[0].addToFeed(photo_id, "Photo");
+						});
+					} ];
+					app.lock[follower.id][0]();
+				}
+				else
+				{
+					app.lock[follower.id].push(function() {
+						follower.getFeed(function (err, feed){
+							if (err) throw err;
+						});
+					});
+				}
+                
+				})
+            })
         });
-      });
-      if (app.lock.length == 1)
-      {
-        app.lock[0]();
       }
-    });
     }
-    }
-  
   });
 
     models.Follow = db.define("Follow", {

@@ -1,72 +1,28 @@
   /*
  * GET login page.
  */
-
 var path = require('path');
 var fs = require('fs');
 var imagemagick = require('imagemagick');
 var gm = require('gm').subClass({ imageMagick: true });
 var flash = require('connect-flash');
 
-var cache_manager = require('cache-manager');
-
 exports.load = function(req, res){
 	res.writeHead(200, {
             'Content-Type':('image/' + req.params.ext)
 	})
 	var start = new Date().getTime();
-
-	var photoCacheKey = 'loadPhoto' + userID;
- 	var feed;
-
-	req.app.locals.photo_cache.wrap(photoCacheKey, function(){
- 		req.models.Photo.get(req.params.id, function(err, photo) {
-
-			// CHANGE: Got rid of graphics magick for serving images here.
-			/*
-			var image = gm(photo.Path);
-			image.stream(function (err, stdout, stderr)
-			{
-				if (err) throw err;
-				stdout.pipe(res); 
-			});
-	  		*/
-			var end = new Date().getTime();
-			var db_time = end - start; 
-			console.log("Database access (Photo table) " + db_time + "ms");
-
-			memory_cache.set(photoCacheKey, photo);
-
-			res.write(fs.readFileSync(photo.Path));
-			res.end();
-		});
- 		
-
- 		} , function(err, cachedPhoto) {
- 			res.write(fs.readFileSync(cachedPhoto.Path));
-			res.end();
-  		}
-	);
-/*
 	req.models.Photo.get(req.params.id, function(err, photo) {
-
-		// CHANGE: Got rid of graphics magick for serving images here.
-		/*
 		var image = gm(photo.Path);
 		image.stream(function (err, stdout, stderr)
 		{
 			if (err) throw err;
 			stdout.pipe(res); 
 		});
-  		
 		var end = new Date().getTime();
 		var db_time = end - start; 
 		console.log("Database access (Photo table) " + db_time + "ms");
-
-		res.write(fs.readFileSync(photo.Path));
-		res.end();
 	});
-  */
 }
 
 exports.loadThumbnail = function(req, res){
@@ -76,26 +32,16 @@ exports.loadThumbnail = function(req, res){
 	var start = new Date().getTime();
 	req.models.Photo.get(req.params.id, function(err, photo) {
 		if (err) throw err;
-		var newPathSplit = photo.Path.split(".");
-		var newPath = newPathSplit[0] + "thumb." + newPathSplit[1];
-
-		/* CHANGE: get saved thumb instead of doing graphics work
 		var image = gm(photo.Path);
 		image.resize(400);
-
 		image.stream(function (err, stdout, stderr)
 		{
 			if (err) throw err;
 			stdout.pipe(res); 
 		});
-		*/
-
 		var end = new Date().getTime();
 		var db_time = end - start; 
 		console.log("Database access (Photo table) " + db_time + "ms");
-
-		res.write(fs.readFileSync(newPath));
-		res.end();
 	});
 }
 
@@ -126,9 +72,6 @@ exports.uploadAction = function(req, res, errorMessage){
 	  // get field values for db
       var userID = parseInt(req.session.user.id);
       var timestamp = new Date().getTime();
-
-      // respond before photo creation work is being done.
-      res.redirect('/feed');
 	  
 	  req.models.Photo.create([
       {
@@ -139,8 +82,6 @@ exports.uploadAction = function(req, res, errorMessage){
 			if (err) throw err;
 			else
 			{
-				saveThumbnail(err, items, req, res, extension);
-
 				var newPath = path.normalize(__dirname + "/../photos/" + items[0].id + "." + extension)
 				items[0].Path = newPath;
 				items[0].save(function (err) 
@@ -149,6 +90,7 @@ exports.uploadAction = function(req, res, errorMessage){
 					fs.rename(req.files.image.path, newPath, function(err) 
 					{
 						if (err) throw err;
+						res.redirect('/feed');
 					});
 				});
 			}
@@ -158,13 +100,4 @@ exports.uploadAction = function(req, res, errorMessage){
 		})
     } 
   }
-}
-
-// CHANGE: Create the thumbnail and store it on the upload, to make serving images in feed faster
-var saveThumbnail = function(err, items, req, res, extension) {
-	var thumbPath = path.normalize(__dirname + "/../photos/" + items[0].id + "thumb." + extension)
-
-	gm(req.files.image.path).resize(400).write(thumbPath, function (error) { 
-		if(error) console.log('error');
-	});
 }

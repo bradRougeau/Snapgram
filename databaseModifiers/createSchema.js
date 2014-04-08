@@ -42,7 +42,7 @@ shareTable = "CREATE TABLE Share (\
 
 mysql = require('mysql');
 conn = mysql.createConnection({
-							host: 'web2.cpsc.ucalgary.ca',
+							host: 'localhost',
 							user: 's513_krdillma',
 							password: '10083537',
 							database: 's513_krdillma'                              });

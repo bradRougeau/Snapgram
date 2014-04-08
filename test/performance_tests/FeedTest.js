@@ -29,10 +29,8 @@ var requestPhoto = function(photoPath, requestNum, totalRequests, numPhotos)
 		// is complete
 		response.on('end', function() {
 			photosLoaded[requestNum]++;
-			if (photosLoaded[requestNum] == numPhotos)
-			{
-				console.log(totalRequests + ',' + (new Date() - startTime));
-			}
+			console.log(photoPath);
+			console.log('Request Number: ' + requestNum + " took " + (new Date() - startTime));
 				
 		});
 	});
@@ -70,10 +68,13 @@ var createRequest = function(requestNum, totalRequests)
 		// is complete
 		response.on('end', function() {
 			var splitData = fullData.split('<img src="')
+			var counter = 0;
 			photosLoaded[requestNum] = 0;
 			for (var i = 1; i < splitData.length; i++)
 			{
 				requestPhoto(splitData[i].split('"')[0], requestNum, totalRequests, splitData.length - 1);
+				console.log(counter);
+				counter++;
 			}	
 		});
 	});
@@ -88,9 +89,13 @@ var createRequest = function(requestNum, totalRequests)
 
 var createRequests = function(totalRequests)
 {
+	requestsCompleted = 0;
 	startTime = new Date();
+	for (var i = 0; i < totalRequests; i++)
+	{
+		createRequest(i, totalRequests)
+	}
 
-	createRequest(totalRequests, totalRequests)
 }
 
 var login = function()
@@ -125,7 +130,7 @@ var login = function()
 		response.on('end', function() {
 			//Ugly code to get session cookie
 			sessionID = response.headers['set-cookie'][0].split('sid=')[1].split(';')[0];
-			createRequests(50);
+			createRequests(1);
 			//and the user ID
 			/**firstUserID = response.headers['set-cookie'][0].split('id%22%3A')[1].split('%7D%7D')[0];*/
 		});
